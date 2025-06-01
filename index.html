@@ -43,8 +43,8 @@
     <body>
         <div class="container">
             <h1>RP++</h1>
-            <strong>当前位置: RP_Incremental/index.html</strong>
-            <p>你想浏览什么?</p>
+            <strong>当前位置：RP_Incremental/index.html</strong>
+            <p>你想玩哪个版本？</p>
             <div id="versions"></div>
             <script>
                 const vers = [
@@ -56,7 +56,7 @@
                 vers.forEach(i => {
                     const a = document.createElement('a');
                     a.href = `https://whitecatblackhat.github.io/RP_Incremental/RP++%20v${i}.html`;
-                    a.innerText = `RP++ ${i}`;
+                    a.innerText = `RP++ v${i}`;
                     const p = document.createElement('p');
                     p.appendChild(a);
                     div.appendChild(p);
