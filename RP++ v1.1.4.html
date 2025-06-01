@@ -48,6 +48,7 @@
         </div>
         <div id="others">
             <p>更新日志：</p>
+            <p>2025.06.01 v1.1.4 修复了 bigNum 的潜在问题</p>
             <p>2025.06.01 v1.1.3 增加了重置按钮</p>
             <p>2025.05.31 v1.1.2 增加了后期 stage 的增益</p>
             <p>2025.05.31 v1.1.1 增加了一个 stage 并微调了 stage 相关内容的显示</p>
@@ -206,10 +207,10 @@
                     cnt: bn(0, 0),
                     bought: 0,
                     cost: cost,
-                    mul: bn(mul, 0)
+                    mul: toBn(mul)
                 };
             }
-            let rp, timeFac = 1, stage = 0, stageNeed = [bn(1,2), bn(2,4), bn(1,6), bn(1,300), bn(1,1825)], mspf = 40, spf = 0.04;
+            let rp, timeFac = 1, stage = 0, stageNeed = [bn(1,2), bn(2,4), bn(1,6), bn(1,300), bn(1,1825)], mspf = 40, spf = bn(4, -2);
             let int, array, vector, map, graph;
             function reset() {
                 timeFac = 1;
@@ -224,7 +225,7 @@
                 map = DS('map', bn(5,1), 8);
                 graph = DS('graph', bn(1,6), 2);
             }
-            init();
+            reset();
             function afford(id) {
                 if (id === 'int') {
                     return rp.ge(int.cost);
@@ -248,26 +249,26 @@
             function factor(id) {
                 let ret;
                 if (id === 'int') {
-                    ret = bn(timeFac, 0).mul(int.cnt).mul(factor('array'));
+                    ret = toBn(timeFac).mul(int.cnt).mul(factor('array'));
                 }
                 if (id === 'array') {
                     return toBn(1.5 + int.bought * 0.1).pow(array.cnt.toNumber());
                 }
                 if (id === 'vector') {
-                    ret = bn(timeFac, 0).mul(vector.cnt).mul(factor('map')).mul(bn(0.5, 0));
+                    ret = toBn(timeFac).mul(vector.cnt).mul(factor('map')).mul(bn(0.5, 0));
                 }
                 if (id === 'map') {
                     return toBn(Math.log2(int.bought + 2)).pow(map.cnt.toNumber());
                 }
                 if (id === 'graph') {
-                    ret = bn(timeFac, 0).mul(graph.cnt).mul(bn(0.5, 0));
+                    ret = toBn(timeFac).mul(graph.cnt).mul(bn(0.5, 0));
                 }
                 return rp.le(bn(1, 308)) ? ret : bn(1, 308).mul(ret.div(bn(1, 308)).pow(0.5));
             }
             function update() {
-                rp = rp.add(factor('int').mul(bn(spf, 0)));
-                int.cnt = int.cnt.add(factor('vector').mul(bn(spf, 0)));
-                vector.cnt = vector.cnt.add(factor('graph').mul(bn(spf, 0)));
+                rp = rp.add(factor('int').mul(spf));
+                int.cnt = int.cnt.add(factor('vector').mul(spf));
+                vector.cnt = vector.cnt.add(factor('graph').mul(spf));
             }
             function screen() {
                 document.getElementById('rp').textContent = rp.toStr();
