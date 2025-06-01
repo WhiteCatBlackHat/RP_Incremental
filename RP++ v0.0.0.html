@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charmap="UTF-8">
+        <title>RP++ v0.0.0</title>
+    </head>
+    <body>
+        <div id="head">
+            <p>
+                <button id="showDS" onclick="hideAll(); document.getElementById('DS').hidden=false; document.getElementById('showDS').disabled=true;">数据结构</button> 
+                <button id="showOthers" onclick="hideAll(); document.getElementById('others').hidden=false; document.getElementById('showOthers').disabled=true;">杂项</button> 
+            </p>
+        </div>
+        <div id="DS">
+            <div id="stage">
+                <p>你有 <span id="rp">10</span> RP。</p>
+                <p>当前现实时间 1s = 游戏时间 <span id="timeFac">1</span>s。</p>
+                <p>达到 <span id="nxtNeed">0</span> RP 后点击 <button id="nxtStage" onclick="nextStage()">此处</button> 以让游戏时间变快 20% 并解锁一个新的数据结构。</p>
+            </div>
+            <div id="int">
+                <p>你每秒（现实时间）获得 <span id="rpSec">0</span> RP。</p>
+                <p>你有 <span id="intCnt">0</span> 个 int。</p>
+                <p>点击 <button id="buyInt" onclick="buy('int')">此处</button> 花费 <span id="intCost">0</span> RP 购买一个 int。</p>
+            </div>
+            <div id="array">
+                <p>你有 <span id="arrCnt">0</span> 个 array。</p>
+                <p>array 给 int 提供 *<span id="arrFac">1.5</span> 的增益。</p>
+                <p>点击 <button id="buyArr" onclick="buy('array')">此处</button> 花费 <span id="arrCost">0</span> 个 int 购买一个 array。</p>
+            </div>
+            <div id="vector">
+                <p>你有 <span id="vecCnt">0</span> 个 vector。</p>
+                <p>你每秒（现实时间）获得 <span id="intSec">0</span> 个 int。</p>
+                <p>点击 <button id="buyVec" onclick="buy('vector')">此处</button> 花费 <span id="vecCost">0</span> RP 购买一个 vector。</p>
+            </div>
+            <div id="map">
+                <p>你有 <span id="mapCnt">0</span> 个 map。</p>
+                <p>map 给 vector 提供 *<span id="mapFac">1</span> 的增益。</p>
+                <p>点击 <button id="buyMap" onclick="buy('map')">此处</button> 花费 <span id="mapCost">0</span> 个 int 购买一个 map。</p>
+            </div>
+            <div id="graph">
+                <p>你有 <span id="graCnt">0</span> 个 graph。</p>
+                <p>你每秒获得 <span id="vecSec">0</span> 个 vector。</p>
+                <p>点击 <button id="buyGra" onclick="buy('graph')">此处</button> 花费 <span id="graCost">0</span> RP 购买一个 graph。</p>
+            </div>
+        </div>
+        <div id="others">
+            <p>更新日志：</p>
+            <p>2025.05.31 v0.0.0 根据 yty 写的 C++ 版 RP 增量游戏 v0.6 改编成了 html 版 RP++</p>
+        </div>
+        <script>
+            function DS(id, cost, mul) { // Data Structure，数据结构
+                return {
+                    id: id,
+                    cnt: 0,
+                    bought: 0,
+                    cost: cost,
+                    mul: mul
+                };
+            }
+            function toStr(val) {
+                if (val < 1e3) return val.toFixed(2);
+                if (val < 1e6) return (val / 1e3).toFixed(2) + 'K';
+                if (val < 1e9) return (val / 1e6).toFixed(2) + 'M';
+                if (val < 1e12) return (val / 1e9).toFixed(2) + 'B';
+                if (val < 1e15) return (val / 1e12).toFixed(2) + 'T';
+                if (val < 1e18) return (val / 1e15).toFixed(2) + 'Qa';
+                if (val < 1e21) return (val / 1e18).toFixed(2) + 'Qi';
+                if (val < 1e24) return (val / 1e21).toFixed(2) + 'Sx';
+                if (val < 1e27) return (val / 1e24).toFixed(2) + 'Sp';
+                if (val < 1e30) return (val / 1e27).toFixed(2) + 'Oc';
+                if (val < 1e33) return (val / 1e30).toFixed(2) + 'No';
+                if (val < 1e36) return (val / 1e33).toFixed(2) + 'Dc';
+                let exp = Math.floor(Math.log10(val));
+                return (val / Math.pow(10, exp)).toFixed(2) + 'e' + exp;
+            }
+            let rp, timeFac = 1, stage = 0, limit = [1e2, 2e4, 1e6, 1e300];
+            let int, array, vector, map, graph;
+            function init() {
+                rp = 10;
+                int = DS('int', 1, 2);
+                array = DS('array', 5, 4);
+                vector = DS('vector', 100, 2);
+                map = DS('map', 50, 8);
+                graph = DS('graph', 1e6, 2);
+            }
+            init();
+            let mspf = 40, spf = 0.04;
+            function factor(id) {
+                if (id == 'int') {
+                    return timeFac * int.cnt * factor('array');
+                }
+                if (id == 'array') {
+                    return Math.pow(1.5 + int.bought * 0.1, array.cnt);
+                }
+                if (id == 'vector') {
+                    return timeFac * vector.cnt * factor('map') * 0.5;
+                }
+                if (id == 'map') {
+                    return Math.pow(Math.log2(int.bought + 2), map.cnt);
+                }
+                if (id == 'graph') {
+                    return timeFac * graph.cnt * 0.5;
+                }
+            }
+            function update() {
+                rp += factor('int') * spf;
+                int.cnt += factor('vector') * spf;
+                vector.cnt += factor('graph') * spf;
+            }
+            function screen() {
+                document.getElementById('rp').textContent = toStr(rp);
+                document.getElementById('timeFac').textContent = toStr(timeFac);
+                document.getElementById('nxtNeed').textContent = toStr(limit[stage]);
+                document.getElementById('nxtStage').disabled = rp < limit[stage];
+
+                document.getElementById('rpSec').textContent = toStr(factor('int'));
+                document.getElementById('intCnt').textContent = toStr(int.cnt);
+                document.getElementById('intCost').textContent = toStr(int.cost);
+                document.getElementById('buyInt').disabled = rp < int.cost;
+
+                document.getElementById('arrFac').textContent = toStr(factor('array'));
+                document.getElementById('arrCnt').textContent = toStr(array.cnt);
+                document.getElementById('arrCost').textContent = toStr(array.cost);
+                document.getElementById('buyArr').disabled = int.cnt < array.cost;
+
+                document.getElementById('vector').hidden = stage < 1;
+                document.getElementById('intSec').textContent = toStr(factor('vector'));
+                document.getElementById('vecCnt').textContent = toStr(vector.cnt);
+                document.getElementById('vecCost').textContent = toStr(vector.cost);
+                document.getElementById('buyVec').disabled = rp < vector.cost;
+
+                document.getElementById('map').hidden = stage < 2;
+                document.getElementById('mapFac').textContent = toStr(factor('map'));
+                document.getElementById('mapCnt').textContent = toStr(map.cnt);
+                document.getElementById('mapCost').textContent = toStr(map.cost);
+                document.getElementById('buyMap').disabled = int.cnt < map.cost;
+
+                document.getElementById('graph').hidden = stage < 3;
+                document.getElementById('vecSec').textContent = toStr(factor('graph'));
+                document.getElementById('graCnt').textContent = toStr(graph.cnt);
+                document.getElementById('graCost').textContent = toStr(graph.cost);
+                document.getElementById('buyGra').disabled = rp < graph.cost;
+            }
+            function buy(id) {
+                if (id == 'int') {
+                    if (rp >= int.cost) {
+                        rp -= int.cost;
+                        int.cnt++;
+                        int.bought++;
+                        int.cost = Math.floor(int.cost * int.mul);
+                    }
+                }
+                if (id == 'array') {
+                    if (int.cnt >= array.cost) {
+                        int.cnt -= array.cost;
+                        array.cnt++;
+                        array.bought++;
+                        array.cost = Math.floor(array.cost * array.mul);
+                    }
+                }
+                if (id == 'vector') {
+                    if (rp >= vector.cost) {
+                        rp -= vector.cost;
+                        vector.cnt++;
+                        vector.bought++;
+                        vector.cost = Math.floor(vector.cost * vector.mul);
+                    }
+                }
+                if (id == 'map') {
+                    if (int.cnt >= map.cost) {
+                        int.cnt -= map.cost;
+                        map.cnt++;
+                        map.bought++;
+                        map.cost = Math.floor(map.cost * map.mul);
+                    }
+                }
+                if (id == 'graph') {
+                    if (rp >= graph.cost) {
+                        rp -= graph.cost;
+                        graph.cnt++;
+                        graph.bought++;
+                        graph.cost = Math.floor(graph.cost * graph.mul);
+                    }
+                }
+            }
+            function nextStage() {
+                if (rp >= limit[stage]) {
+                    rp -= limit[stage];
+                    timeFac *= 1.2;
+                    stage++;
+                    init();
+                }
+            }
+            setInterval(() => {
+                update();
+                screen();
+            }, mspf);
+
+            function hideAll() {
+                document.getElementById('DS').hidden = true;
+                document.getElementById('showDS').disabled = false;
+                document.getElementById('others').hidden = true;
+                document.getElementById('showOthers').disabled = false;
+            }
+        </script>
+    </body>
+</html>
