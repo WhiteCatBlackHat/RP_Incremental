@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>RP++ v1.4.5</title>
+        <style>
+            body {
+                background: #f4f6fa;
+                color: #222;
+                font-family: '微软雅黑', 'Microsoft YaHei', Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            #Head {
+                margin: 32px auto 16px auto;
+                width: 90%;
+                max-width: 600px;
+                text-align: center;
+                font-size: 1.2em;
+            }
+            #pages {
+                margin: 0 auto 16px auto;
+                width: 90%;
+                max-width: 600px;
+                text-align: center;
+            }
+            .container {
+                background: #e9ecf1;
+                border: 1px solid #c3c8d1;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(80,90,110,0.04);
+                padding: 24px 20px 20px 20px;
+                margin: 0 auto 24px auto;
+                width: 90%;
+                max-width: 720px;
+            }
+            button {
+                background: #d3dae3;
+                color: #222;
+                border: 1px solid #b0b7c3;
+                border-radius: 6px;
+                padding: 6px 18px;
+                margin: 4px 2px;
+                font-size: 1em;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            button:disabled {
+                background: #e0e3e8;
+                color: #aaa;
+                border-color: #d0d3d8;
+                cursor: not-allowed;
+            }
+            button:hover:not(:disabled) {
+                background: #c2c9d6;
+            }
+            p {
+                margin: 10px 0 10px 0;
+            }
+            span[id$='Cnt'], span[id$='Sec'], span[id='rp'], span[id$='Fac'], span[id$='Cost'], span[id$='Need'], span[id$='Bonus'], span[id^='crt'] {
+                color: #2a3a4a;
+                font-weight: bold;
+            }
+            #SUL {
+                color: #6a6a7a;
+                font-size: 0.98em;
+            }
+            input[type="checkbox"] {
+                appearance: none;
+                width: 20px;
+                height: 20px;
+                border: 2px solid #c4c4c4;
+                border-radius: 4px;
+                background-color: #f2f2f2;
+                position: relative;
+                cursor: pointer;
+                vertical-align: middle;
+                margin-right: 8px;
+            }
+            input[type="checkbox"]:checked {
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+            input[type="checkbox"]:checked::after {
+                content: '✔';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="Head">
+            <p>你有 <span id="rp">10</span> RP。</p>
+        </div>
+        <div id="pages">
+            <p>
+                <button id="showDS" onclick="hideAll(); document.getElementById('DS').hidden=false; document.getElementById('showDS').disabled=true;">数据结构</button> 
+                <button id="showAutoBuy" onclick="hideAll(); document.getElementById('autoBuy').hidden=false; document.getElementById('showAutoBuy').disabled=true;">自动购买</button> 
+                <button id="showOthers" onclick="hideAll(); document.getElementById('others').hidden=false; document.getElementById('showOthers').disabled=true;">杂项</button> 
+            </p>
+        </div>
+        <div id="DS" class="container">
+            <!-- Data Structure，数据结构 -->
+            <div id="head">
+                <p>当前在 Stage #<span id="crtStage">0</span>，现实时间 1s = 游戏时间 <span id="timeFac">1</span>s。</p>
+                <p>
+                    达到 <span id="stageNeed">0</span> RP 后点击 <button id="nxtStage" onclick="nextStage()">此处</button> 
+                    以让游戏时间变为原来的 <span id="stageBonus">1.2</span> 倍<span id="unlock">，并解锁一个新的数据结构</span>。
+                </p>
+                <p><button id="maxAll" onclick="maxAll()">全部购买最大</button></p>
+            </div>
+            <div id="int">
+                <p>你有 <span id="intCnt">0</span> 个 int，每秒（现实时间）获得 <span id="rpSec">0</span> RP。</p>
+                <p>点击 <button id="buyInt" onclick="buy('int')">此处</button> 花费 <span id="intCost">0</span> RP 购买一个 int。</p>
+            </div>
+            <div id="array">
+                <p>你有 <span id="arrCnt">0</span> 个 array，给 int 提供 *<span id="arrFac">1.5</span> 的增益。</p>
+                <p>点击 <button id="buyArr" onclick="buy('array')">此处</button> 花费 <span id="arrCost">0</span> 个 int 购买一个 array。</p>
+            </div>
+            <div id="vector">
+                <p>你有 <span id="vecCnt">0</span> 个 vector，每秒（现实时间）获得 <span id="intSec">0</span> 个 int。</p>
+                <p>点击 <button id="buyVec" onclick="buy('vector')">此处</button> 花费 <span id="vecCost">0</span> RP 购买一个 vector。</p>
+            </div>
+            <div id="map">
+                <p>你有 <span id="mapCnt">0</span> 个 map，给 vector 提供 *<span id="mapFac">1</span> 的增益。</p>
+                <p>点击 <button id="buyMap" onclick="buy('map')">此处</button> 花费 <span id="mapCost">0</span> 个 int 购买一个 map。</p>
+            </div>
+            <div id="graph">
+                <p>你有 <span id="graCnt">0</span> 个 graph，每秒（现实时间）获得 <span id="vecSec">0</span> 个 vector。</p>
+                <p>点击 <button id="buyGra" onclick="buy('graph')">此处</button> 花费 <span id="graCost">0</span> RP 购买一个 graph。</p>
+            </div>
+            <div id="SUL">
+                <!-- Soft Upper Limit，软上限 -->
+                <p id="SUL1">软上限 1：RP 超过 1e308 时，int、vector、graph 的生产力超过 1e308 的部分变为原来的 0.5 次方。</p>
+            </div>
+        </div>
+        <div id="autoBuy" class="container">
+            <p><label for="autoInt"><input type="checkbox" id="autoInt"> 自动购买 int</label></p>
+            <p><label for="autoArray"><input type="checkbox" id="autoArray"> 自动购买 array</label></p>
+            <p><label for="autoVector"><input type="checkbox" id="autoVector"> 自动购买 vector</label></p>
+            <p><label for="autoMap"><input type="checkbox" id="autoMap"> 自动购买 map</label></p>
+            <p><label for="autoGraph"><input type="checkbox" id="autoGraph"> 自动购买 graph</label></p>
+        </div>
+        <div id="others" class="container">
+            <p><button onclick="saveGame()">保存游戏</button> <button onclick="loadGame()">读取存档</button></p>
+            <p>更新日志：</p>
+            <p>2025.06.07 v1.4.5 修复了自动购买相关 bug</p>
+            <p>2025.06.04 v1.4.4 完善了防止陷入死局的机制</p>
+            <p>2025.06.01 v1.4.3 修复了 stage 在 1029 时 timeFac 变为 NaN 的问题</p>
+            <p>2025.06.01 v1.4.2 修复了 stage 在大约 130 时 timeFac 的显示错误</p>
+            <p>2025.06.01 v1.4.1 修正了一个语法错误</p>
+            <p>2025.06.01 v1.4.0 增加了自动购买</p>
+            <p>2025.06.01 v1.3.3 修改了 CSS 样式</p>
+            <p>2025.06.01 v1.3.2 微调了 stage 相关内容</p>
+            <p>2025.06.01 v1.3.1 修改了软上限</p>
+            <p>2025.06.01 v1.3.0 增加了 CSS 样式</p>
+            <p>2025.06.01 v1.2.1 更新了 UI</p>
+            <p>2025.06.01 v1.2.0 增加了存读档功能</p>
+            <p>2025.06.01 v1.1.4 修复了 bigNum 的潜在问题</p>
+            <p>2025.06.01 v1.1.3 增加了重置按钮</p>
+            <p>2025.05.31 v1.1.2 增加了后期 stage 的增益</p>
+            <p>2025.05.31 v1.1.1 增加了一个 stage 并微调了 stage 相关内容的显示</p>
+            <p>2025.05.31 v1.1.0 增加了一个软上限</p>
+            <p>2025.05.31 v1.0.2 修复了 factor 计算时可能出现 NaN 的 bug</p>
+            <p>2025.05.31 v1.0.1 增加了防止陷入死局的机制</p>
+            <p>2025.05.31 v1.0.0 增加了 bigNum 类以扩大数字显示的范围</p>
+            <p>2025.05.31 v0.0.4 增加了“全部购买最大”</p>
+            <p>2025.05.31 v0.0.3 完善了数字显示机制</p>
+            <p>2025.05.31 v0.0.2 增加了通关判定</p>
+            <p>2025.05.31 v0.0.1 更新了 UI</p>
+            <p>2025.05.31 v0.0.0 根据 yty 写的 C++ 版 RP 增量游戏 v0.6 改编成了 html 版 RP++</p>
+            <p><button id="reset" onclick="reset()">重置游戏</button></p>
+        </div>
+        <script>
+            hideAll();
+            document.getElementById('DS').hidden=false;
+            document.getElementById('showDS').disabled=true;
+
+            function toStr(val) {
+                if (val < 0)    return '-' + toStr(-val);
+                if (val === 0)   return '0.00';
+                if (0.01 <= val && val < 1e3)  return val.toFixed(2);
+                if (val < 1e6)  return (val / 1e3).toFixed(2) + 'K';
+                if (val < 1e9)  return (val / 1e6).toFixed(2) + 'M';
+                if (val < 1e12) return (val / 1e9).toFixed(2) + 'B';
+                if (val < 1e15) return (val / 1e12).toFixed(2) + 'T';
+                if (val < 1e18) return (val / 1e15).toFixed(2) + 'Qa';
+                if (val < 1e21) return (val / 1e18).toFixed(2) + 'Qi';
+                if (val < 1e24) return (val / 1e21).toFixed(2) + 'Sx';
+                if (val < 1e27) return (val / 1e24).toFixed(2) + 'Sp';
+                if (val < 1e30) return (val / 1e27).toFixed(2) + 'Oc';
+                if (val < 1e33) return (val / 1e30).toFixed(2) + 'No';
+                if (val < 1e36) return (val / 1e33).toFixed(2) + 'Dc';
+                return toBn(val).toStr();
+            }
+            function bn(bas, exp) {
+                return new bigNum(bas, exp);
+            }
+            function toBn(num) {
+                if (typeof num === 'object') {
+                    try {
+                        return bn(num.bas, num.exp);
+                    } catch(e) {
+                        return bn(0, 0);
+                    }
+                }
+                if (typeof num !== 'number' || isNaN(num)) return bn(0, 0);
+                if (num === 0)  return bn(0, 0);
+                if (num < 0)    return toBn(-num);
+                const exp = Math.floor(Math.log10(Math.abs(num)));
+                const bas = num / Math.pow(10, exp);
+                return bn(bas, exp);
+            }
+            class bigNum {
+                maintain(bas, exp) {
+                    if (bas === 0) {
+                        this.bas = 0;
+                        this.exp = 0;
+                        return;
+                    }
+                    const sign = Math.sign(bas);
+                    bas = Math.abs(bas);
+                    const expAdjust = Math.floor(Math.log10(bas));
+                    this.bas = sign * bas / Math.pow(10, expAdjust);
+                    this.exp = exp + expAdjust;
+                    if (Math.abs(this.bas) >= 10) {
+                        this.bas /= 10;
+                        this.exp += 1;
+                    } else if (Math.abs(this.bas) < 1 && this.bas !== 0) {
+                        this.bas *= 10;
+                        this.exp -= 1;
+                    }
+                }
+                constructor(bas = 0, exp = 0) {
+                    this.maintain(bas, exp);
+                }
+                copy() {
+                    return bn(this.bas, this.exp);
+                }
+                add(that) {
+                    if (this.bas === 0) return that.copy();
+                    if (that.bas === 0) return this.copy();
+                    const expDiff = this.exp - that.exp;
+                    if (expDiff > 10) return this.copy();
+                    if (expDiff < -10) return that.copy();
+                    const smaller = expDiff > 0 ? that : this;
+                    const larger = expDiff > 0 ? this : that;
+                    const diff = Math.abs(expDiff);
+                    return bn(larger.bas + smaller.bas / Math.pow(10, diff), larger.exp);
+                }
+                sub(that) {
+                    return this.add(bn(-that.bas, that.exp));
+                }
+                mul(that) {
+                    if (this.bas === 0 || that.bas === 0) {
+                        return bn(0, 0);
+                    }
+                    return bn(this.bas * that.bas, this.exp + that.exp);
+                }
+                div(that) {
+                    if (that.bas === 0) throw new Error("Division by zero");
+                    if (this.bas === 0) return bn(0, 0);
+                    return bn(this.bas / that.bas, this.exp - that.exp);
+                }
+                compare(that) {
+                    if (this.bas < 0 && that.bas >= 0) return -1;
+                    if (this.bas >= 0 && that.bas < 0) return 1;
+                    if (this.bas >= 0) {
+                        if (this.exp > that.exp) return 1;
+                        if (this.exp < that.exp) return -1;
+                        if (this.bas > that.bas) return 1;
+                        if (this.bas < that.bas) return -1;
+                        return 0;
+                    } else {
+                        if (this.exp > that.exp) return -1;
+                        if (this.exp < that.exp) return 1;
+                        if (this.bas > that.bas) return -1;
+                        if (this.bas < that.bas) return 1;
+                        return 0;
+                    }
+                }
+                gt(that) {
+                    return this.compare(that) > 0;
+                }
+                ge(that) {
+                    return this.compare(that) >= 0;
+                }
+                lt(that) {
+                    return this.compare(that) < 0;
+                }
+                le(that) {
+                    return this.compare(that) <= 0;
+                }
+                eq(that) {
+                    return this.compare(that) === 0;
+                }
+                toNumber() {
+                    return this.bas * Math.pow(10, this.exp);
+                }
+                toStr(prec = 2) {
+                    if (this.exp >= -2 && this.exp < 36) {
+                        return toStr(this.toNumber());
+                    }
+                    const basStr = this.bas.toFixed(prec);
+                    return `${basStr}e${this.exp}`;
+                }
+                log10() {
+                    return Math.log10(this.bas) + this.exp;
+                }
+                pow(exp) {
+                    if (exp === 0) return bn(1, 0);
+                    if (this.bas === 0) return bn(0, 0);
+                    const logValue = this.log10() * exp;
+                    const newExp = Math.floor(logValue);
+                    const newBas = Math.pow(10, logValue - newExp);
+                    return bn(newBas, newExp);
+                }
+            }
+
+            function DS(id, cost, mul) { // Data Structure，数据结构
+                return {
+                    id: id,
+                    cnt: bn(0, 0),
+                    bought: 0,
+                    cost: cost,
+                    mul: toBn(mul)
+                };
+            }
+            let rp, timeFac = bn(1,0), stage = 0, mspf = 40, spf = bn(4, -2);
+            let stageNeed = [bn(1,2), bn(2,4), bn(1,6), bn(1,300), bn(1,1180), bn(1,1190), bn(1,1200)];
+            let int, array, vector, map, graph;
+            function reset() {
+                timeFac = bn(1,0);
+                stage = 0;
+                init();
+            }
+            function init() {
+                rp = bn(1,1);
+                int = DS('int', bn(1,0), 2);
+                array = DS('array', bn(5,0), 4);
+                vector = DS('vector', bn(1,2), 2);
+                map = DS('map', bn(5,1), 8);
+                graph = DS('graph', bn(1,6), 2);
+            }
+            reset();
+            function afford(id) {
+                if (id === 'int') {
+                    return rp.ge(int.cost);
+                }
+                if (id === 'array') {
+                    return int.cnt.ge(array.cost.add(bn(1, -2))) || ( int.cnt.ge(array.cost) && afford('int') );   // 防止出现死局
+                }
+                if (id === 'vector') {
+                    return rp.ge(vector.cost);
+                }
+                if (id === 'map') {
+                    return int.cnt.ge(map.cost);
+                }
+                if (id === 'graph') {
+                    return rp.ge(graph.cost);
+                }
+                if (id === 'nxtStage') {
+                    return rp.ge(stageNeed[Math.min(stage, stageNeed.length - 1)]);
+                }
+            }
+            function factor(id) {
+                let ret;
+                if (id === 'int') {
+                    ret = int.cnt.mul(factor('array'));
+                }
+                if (id === 'array') {
+                    return toBn(1.5 + int.bought * 0.1).pow(array.cnt.toNumber());
+                }
+                if (id === 'vector') {
+                    ret = vector.cnt.mul(factor('map')).mul(bn(0.5, 0));
+                }
+                if (id === 'map') {
+                    return toBn(Math.log2(int.bought + 2)).pow(map.cnt.toNumber());
+                }
+                if (id === 'graph') {
+                    ret = graph.cnt.mul(bn(0.5, 0));
+                }
+                if (id === 'nxtStage') {
+                    return toBn(stage < 5 ? 1.2 : Math.min((1.0 + (stage - 3) * 0.2), 2.0));
+                }
+                return timeFac.mul( rp.le(bn(1, 308)) || ret.le(bn(1, 308)) ? ret : bn(1, 308).mul(ret.div(bn(1, 308)).pow(0.5)) );
+            }
+            function update() {
+                autoBuy();
+                rp = rp.add(factor('int').mul(spf));
+                int.cnt = int.cnt.add(factor('vector').mul(spf));
+                vector.cnt = vector.cnt.add(factor('graph').mul(spf));
+            }
+            function screen() {
+                if (stage < 5) {
+                    document.getElementById('showAutoBuy').disabled = true;
+                    document.getElementById('autoBuy').hidden = true;
+                }
+                document.getElementById('rp').textContent = rp.toStr();
+                document.getElementById('timeFac').textContent = timeFac.toStr();
+                document.getElementById('crtStage').textContent = stage.toString();
+                document.getElementById('stageNeed').textContent = stageNeed[Math.min(stage, stageNeed.length - 1)].toStr();
+                document.getElementById('nxtStage').disabled = !afford('nxtStage');
+                document.getElementById('stageBonus').textContent = toStr(factor('nxtStage'));
+                if (stage < 3) {
+                    document.getElementById('unlock').textContent = '并解锁一个新的数据结构';
+                } else if (stage == 4) {
+                    document.getElementById('unlock').textContent = '并解锁自动购买';
+                } else {
+                    document.getElementById('unlock').textContent = '';
+                }
+
+                document.getElementById('rpSec').textContent = factor('int').toStr();
+                document.getElementById('intCnt').textContent = int.cnt.toStr();
+                document.getElementById('intCost').textContent = int.cost.toStr();
+                document.getElementById('buyInt').disabled = !afford('int');
+
+                document.getElementById('arrFac').textContent = factor('array').toStr();
+                document.getElementById('arrCnt').textContent = array.cnt.toStr();
+                document.getElementById('arrCost').textContent = array.cost.toStr();
+                document.getElementById('buyArr').disabled = !afford('array');
+
+                document.getElementById('vector').hidden = stage < 1;
+                document.getElementById('intSec').textContent = factor('vector').toStr();
+                document.getElementById('vecCnt').textContent = vector.cnt.toStr();
+                document.getElementById('vecCost').textContent = vector.cost.toStr();
+                document.getElementById('buyVec').disabled = !afford('vector');
+
+                document.getElementById('map').hidden = stage < 2;
+                document.getElementById('mapFac').textContent = factor('map').toStr();
+                document.getElementById('mapCnt').textContent = map.cnt.toStr();
+                document.getElementById('mapCost').textContent = map.cost.toStr();
+                document.getElementById('buyMap').disabled = !afford('map');
+
+                document.getElementById('graph').hidden = stage < 3;
+                document.getElementById('vecSec').textContent = factor('graph').toStr();
+                document.getElementById('graCnt').textContent = graph.cnt.toStr();
+                document.getElementById('graCost').textContent = graph.cost.toStr();
+                document.getElementById('buyGra').disabled = !afford('graph');
+
+                document.getElementById('SUL1').hidden = rp.le(bn(1, 308));
+            }
+            function buy(id) {
+                if (id === 'int') {
+                    if (afford('int')) {
+                        rp = rp.sub(int.cost);
+                        int.cnt = int.cnt.add(bn(1, 0));
+                        int.bought++;
+                        int.cost = int.cost.mul(int.mul);
+                    }
+                }
+                if (id === 'array') {
+                    if (afford('array')) {
+                        int.cnt = int.cnt.sub(array.cost);
+                        array.cnt = array.cnt.add(bn(1, 0));
+                        array.bought++;
+                        array.cost = array.cost.mul(array.mul);
+                    }
+                }
+                if (id === 'vector') {
+                    if (afford('vector')) {
+                        rp = rp.sub(vector.cost);
+                        vector.cnt = vector.cnt.add(bn(1, 0));
+                        vector.bought++;
+                        vector.cost = vector.cost.mul(vector.mul);
+                    }
+                }
+                if (id === 'map') {
+                    if (afford('map')) {
+                        int.cnt = int.cnt.sub(map.cost);
+                        map.cnt = map.cnt.add(bn(1, 0));
+                        map.bought++;
+                        map.cost = map.cost.mul(map.mul);
+                    }
+                }
+                if (id === 'graph') {
+                    if (afford('graph')) {
+                        rp = rp.sub(graph.cost);
+                        graph.cnt = graph.cnt.add(bn(1, 0));
+                        graph.bought++;
+                        graph.cost = graph.cost.mul(graph.mul);
+                    }
+                }
+            }
+            function autoBuy() {
+                if (document.getElementById('autoInt').checked && stage >= 5) {
+                    while (afford('int')) {
+                        buy('int');
+                    }
+                }
+                if (document.getElementById('autoArray').checked && stage >= 5) {
+                    while (afford('array')) {
+                        buy('array');
+                    }
+                }
+                if (document.getElementById('autoVector').checked && stage >= 5) {
+                    while (afford('vector')) {
+                        buy('vector');
+                    }
+                }
+                if (document.getElementById('autoMap').checked && stage >= 5) {
+                    while (afford('map')) {
+                        buy('map');
+                    }
+                }
+                if (document.getElementById('autoGraph').checked && stage >= 5) {
+                    while (afford('graph')) {
+                        buy('graph');
+                    }
+                }
+            }
+            function maxAll() {
+                while (afford('int')) {
+                    buy('int');
+                }
+                while (afford('array')) {
+                    buy('array');
+                }
+                while (afford('vector') && stage >= 1) {
+                    buy('vector');
+                }
+                while (afford('map') && stage >= 2) {
+                    buy('map');
+                }
+                while (afford('graph') && stage >= 3) {
+                    buy('graph');
+                }
+            }
+            function nextStage() {
+                if (afford('nxtStage')) {
+                    timeFac = timeFac.mul(factor('nxtStage'));
+                    stage++;
+                    init();
+                }
+            }
+            setInterval(() => {
+                update();
+                screen();
+            }, mspf);
+            function hideAll() {
+                document.getElementById('DS').hidden = true;
+                document.getElementById('showDS').disabled = false;
+                document.getElementById('others').hidden = true;
+                document.getElementById('showOthers').disabled = false;
+                document.getElementById('autoBuy').hidden = true;
+                document.getElementById('showAutoBuy').disabled = false;
+            }
+            function saveGame() {
+                const saveData = {
+                    rp, timeFac, stage,
+                    int, array, vector, map, graph,
+                    autoInt: document.getElementById('autoInt').checked,
+                    autoArray: document.getElementById('autoArray').checked,
+                    autoVector: document.getElementById('autoVector').checked,
+                    autoMap: document.getElementById('autoMap').checked,
+                    autoGraph: document.getElementById('autoGraph').checked
+                };
+                localStorage.setItem('RP++_save', JSON.stringify(saveData));
+            }
+            function loadGame() {
+                const saveStr = localStorage.getItem('RP++_save');
+                if (!saveStr) {
+                    alert('没有存档可读取！');
+                    return;
+                }
+                let saveData;
+                try {
+                    saveData = JSON.parse(saveStr);
+                } catch (e) {
+                    alert('存档解析失败！');
+                    return;
+                }
+                let errors = [];
+                try { rp = saveData.rp; rp = toBn(rp); } catch (e) { errors.push('rp'); }
+                try { timeFac = saveData.timeFac; timeFac = toBn(timeFac); } catch (e) { errors.push('timeFac'); }
+                try { stage = saveData.stage; } catch (e) { errors.push('stage'); }
+                try {
+                    int = saveData.int;
+                    int.cnt = toBn(int.cnt);
+                    int.cost = toBn(int.cost);
+                } catch (e) { errors.push('int'); }
+                try {
+                    array = saveData.array;
+                    array.cnt = toBn(array.cnt);
+                    array.cost = toBn(array.cost);
+                } catch (e) { errors.push('array'); }
+                try {
+                    vector = saveData.vector;
+                    vector.cnt = toBn(vector.cnt);
+                    vector.cost = toBn(vector.cost);
+                } catch (e) { errors.push('vector'); }
+                try {
+                    map = saveData.map;
+                    map.cnt = toBn(map.cnt);
+                    map.cost = toBn(map.cost);
+                } catch (e) { errors.push('map'); }
+                try {
+                    graph = saveData.graph;
+                    graph.cnt = toBn(graph.cnt);
+                    graph.cost = toBn(graph.cost);
+                } catch (e) { errors.push('graph'); }
+                // 恢复自动购买勾选状态
+                try { document.getElementById('autoInt').checked = saveData.autoInt; } catch (e) { errors.push('autoBuy-int'); }
+                try { document.getElementById('autoArray').checked = saveData.autoArray; } catch (e) { errors.push('autoBuy-array'); }
+                try { document.getElementById('autoVector').checked = saveData.autoVector; } catch (e) { errors.push('autoBuy-vector'); }
+                try { document.getElementById('autoMap').checked = saveData.autoMap; } catch (e) { errors.push('autoBuy-map'); }
+                try { document.getElementById('autoGraph').checked = saveData.autoGraph; } catch (e) { errors.push('autoBuy-graph'); }
+                screen();
+                if (errors.length > 0) {
+                    alert('以下字段存档损坏或版本不兼容：' + errors.join('、'));
+                    throw new Error('以下存档损坏或版本不兼容：' + errors.join('、'));
+                }
+            }
+            if (localStorage.getItem('RP++_save')) {
+                if (confirm('检测到已有存档，是否读取？')) {
+                    loadGame();
+                }
+            }
+        </script>
+    </body>
+</html>
